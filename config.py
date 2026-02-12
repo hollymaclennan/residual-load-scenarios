@@ -6,15 +6,29 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+
+def _get_secret(key: str, default: str) -> str:
+    """Read from env first, then Streamlit secrets if available."""
+    if key in os.environ:
+        return os.environ[key]
+    try:
+        import streamlit as st
+
+        if key in st.secrets:
+            return st.secrets[key]
+    except Exception:
+        pass
+    return default
+
 # =============================================================================
 # DATABASE (PostgreSQL - Azure)
 # =============================================================================
-DB_HOST = os.getenv("DB_HOST", "psql-analytics-uk-gwc.postgres.database.azure.com")
-DB_PORT = os.getenv("DB_PORT", "5432")
-DB_NAME = os.getenv("DB_NAME", "psql-analytics-uk-gwc")
-DB_USER = os.getenv("DB_USER", "analytics_viewer")
-DB_PASSWORD = os.getenv("DB_PASSWORD", "")
-DB_SSLMODE = os.getenv("DB_SSLMODE", "require")
+DB_HOST = _get_secret("DB_HOST", "psql-analytics-uk-gwc.postgres.database.azure.com")
+DB_PORT = _get_secret("DB_PORT", "5432")
+DB_NAME = _get_secret("DB_NAME", "psql-analytics-uk-gwc")
+DB_USER = _get_secret("DB_USER", "analytics_viewer")
+DB_PASSWORD = _get_secret("DB_PASSWORD", "")
+DB_SSLMODE = _get_secret("DB_SSLMODE", "require")
 
 DB_CONNECTION_STRING = (
     f"postgresql+psycopg2://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
